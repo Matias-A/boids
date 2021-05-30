@@ -9,7 +9,7 @@ function App() {
     const [value2, setValue2] = React.useState(50);
     const [value3, setValue3] = React.useState(50);
 
-    let flock = new Flock(1);
+    let flock = new Flock(4);
 
     const draw = (ctx, frameCount) => {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
