@@ -21,6 +21,28 @@
 }
 
 .canvas {
+    border-radius: 5px;
     height: 100%;
     width: 100%;
+}
+
+.slider1 {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    width: 200px;
+}
+
+.slider2 {
+    position: absolute;
+    bottom: 60px;
+    left: 20px;
+    width: 200px;
+}
+
+.slider3 {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
 }
