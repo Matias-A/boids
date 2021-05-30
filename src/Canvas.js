@@ -1,12 +1,32 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 
 const Canvas = props => {
 
-  const canvasRef = useRef(null)
-  const canvas = canvasRef.current
-  const context = canvas.getContext('2d')
+  const { draw, ...rest } = props;
+  const canvasRef = useRef(null);
 
-  return <canvas ref={canvasRef} {...props}/>
+  const { innerWidth: width, innerHeight: height } = window;
+
+  useEffect(() => {
+
+    const canvas = canvasRef.current
+    const context = canvas.getContext('2d')
+    let frameCount = 0
+    let animationFrameId
+
+    const render = () => {
+      frameCount++
+      draw(context, frameCount)
+      animationFrameId = window.requestAnimationFrame(render)
+    }
+    render()
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId)
+    }
+  }, [draw])
+
+  return <canvas ref={canvasRef} {...rest} width={width} height={height}/>
 }
 
 export default Canvas

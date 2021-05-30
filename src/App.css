@@ -13,4 +13,14 @@
     font-family: 'Courier New', monospace;
     color: #022b59;
     font-size: 30px;
+    position: absolute;
+    text-align: center;
+    top: 8px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.canvas {
+    height: 100%;
+    width: 100%;
 }
