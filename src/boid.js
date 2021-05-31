@@ -1,8 +1,9 @@
 class Boid {
-    constructor(x, y, alpha) {
+    constructor(x, y, alpha, flock) {
         this.x = x;
         this.y = y;
         this.alpha = alpha;
+        this.flock = flock;
 
         // Constants
         this.speed = 1;
@@ -10,6 +11,16 @@ class Boid {
         // Keep these as even numbers?
         this.length = 20;
         this.width = 10;
+
+
+        this.neighbors = [];
+
+        // Debugging
+        this.show_radius = true;
+    }
+
+    dist(other) {
+        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
     }
 
     move(ctx) {
@@ -30,31 +41,76 @@ class Boid {
         }
     }
 
-    rotate(clockwise) {
-        if (clockwise) {
-            this.alpha += this.angspeed;
-        } else {
-            this.alpha -= this.angspeed;
+    rotate(rot_coefficient) {
+        this.alpha += rot_coefficient * this.angspeed;
+    }
+
+    neighbor_avg() {
+        let x = 0;
+        let y = 0;
+        let n = 0;
+
+        let ang_x = 0;
+        let ang_y = 0;
+
+        for (let boid of this.flock.boids) {
+            if (boid === this || this.dist(boid) > this.flock.neighbor_radius) continue;
+            // Only for neighbors:
+            x += boid.x;
+            y += boid.y;
+            n += 1;
+
+            ang_x += Math.sin(boid.alpha);
+            ang_y += Math.cos(boid.alpha);
+
         }
+        if (n === 0) return {};
+
+        let avg_angle = Math.PI / 2 - Math.atan2(ang_y,ang_x);
+        if (avg_angle < 0) avg_angle += 2 * Math.PI;
+
+        return {
+            x: x / n,
+            y: y / n,
+            alpha: avg_angle
+        };
     }
 
-    process_cohesion(center) {
-        let vec_c = {x: this.x - center.x, y: this.y - center.y};
-        let ang = Math.acos(vec_c.y / Math.sqrt(vec_c.x*vec_c.x + vec_c.y*vec_c.y));
-        if (vec_c.x < 0) ang = 2*Math.PI - ang;
+    process_cohesion(neighbor_avg) {
+        let vec_c = {x: this.x - neighbor_avg.x, y: this.y - neighbor_avg.y};
+        let ang = Math.PI / 2 - Math.atan2(vec_c.y,vec_c.x);
+        if (ang < 0) ang += 2 * Math.PI;
 
-        let clockwise = true;
+        let ret = 1;
         if ((ang > this.alpha && ang-this.alpha < Math.PI)
-            || (this.alpha > ang && this.alpha - ang > Math.PI)) clockwise = false;
-        return clockwise;
+            || (this.alpha > ang && this.alpha - ang > Math.PI)) ret = -1;
+        return ret;
     }
 
-    draw(ctx, center) {
-        let clockwise = this.process_cohesion(center);
-        this.rotate(clockwise);
+    process_alignment(neighbor_avg) {
+        let ret = -1;
+        if ((neighbor_avg.alpha > this.alpha && neighbor_avg.alpha-this.alpha < Math.PI)
+            || (this.alpha > neighbor_avg.alpha && this.alpha - neighbor_avg.alpha > Math.PI)) ret = 1;
+        return ret;
+    }
 
+    process_separation(neighbor_avg) {
+        return 0;
+    }
+
+    process_movement(ctx, params) {
+        let neighbor_avg = this.neighbor_avg();
+        if (neighbor_avg.x !== undefined) {
+            let rot_coefficient = params.cohesion * this.process_cohesion(neighbor_avg) / 100;
+            rot_coefficient += params.alignment * this.process_alignment(neighbor_avg) / 100;
+            rot_coefficient += params.separation * this.process_separation(neighbor_avg) / 100;
+            this.rotate(rot_coefficient);
+        }
         this.move(ctx);
 
+    }
+
+    draw(ctx) {
         ctx.beginPath();
 
         let r = this.length / 2 + this.width * this.width / (8 * this.length);
@@ -67,6 +123,12 @@ class Boid {
         //ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
         //ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
         ctx.fill();
+
+        if (this.show_radius) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.flock.neighbor_radius, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
     }
 }
 
