@@ -1,3 +1,17 @@
+function add(vec1, vec2) {
+    return {
+        x: vec1.x + vec2.x,
+        y: vec1.y + vec2.y,
+    }
+}
+
+function mult(vec, num) {
+    return {
+        x: vec.x * num,
+        y: vec.y * num
+    }
+}
+
 class Boid {
     constructor(x, y, alpha, flock) {
         this.x = x;
@@ -6,17 +20,18 @@ class Boid {
         this.flock = flock;
 
         // Constants
-        this.speed = 1;
+        this.speed = 0.2;
         this.angspeed = 0.1;
-        // Keep these as even numbers?
-        this.length = 20;
-        this.width = 10;
+
+        this.length = 10;
+        this.width = 5;
 
 
         this.neighbors = [];
 
         // Debugging
         this.show_radius = true;
+        this.angle_vec = {x: 0, y: 0};
     }
 
     dist(other) {
@@ -46,66 +61,73 @@ class Boid {
     }
 
     neighbor_avg() {
-        let x = 0;
-        let y = 0;
+        const gravity_constant = 20.0;
         let n = 0;
 
-        let ang_x = 0;
-        let ang_y = 0;
+        let alignment = {x: 0, y: 0};
+        let center = {x: 0, y: 0};
+        let antigravity = {x: 0, y: 0}; // "anti-gravity" effect away from close neighbors (i.e. separation)
 
         for (let boid of this.flock.boids) {
             if (boid === this || this.dist(boid) > this.flock.neighbor_radius) continue;
             // Only for neighbors:
-            x += boid.x;
-            y += boid.y;
-            n += 1;
+            center = add(center, boid);
+            alignment = add(alignment, {x: Math.sin(boid.alpha), y: Math.cos(boid.alpha)});
 
-            ang_x += Math.sin(boid.alpha);
-            ang_y += Math.cos(boid.alpha);
+            let vec = {x: this.x - boid.x, y: this.y - boid.y};
+            let multiplier = gravity_constant / Math.pow(this.dist(boid) + 0.0001, 2);
+            antigravity = add(antigravity, mult(vec, multiplier));
+
+            n += 1;
 
         }
         if (n === 0) return {};
 
-        let avg_angle = Math.PI / 2 - Math.atan2(ang_y,ang_x);
-        if (avg_angle < 0) avg_angle += 2 * Math.PI;
-
         return {
-            x: x / n,
-            y: y / n,
-            alpha: avg_angle
+            center: mult(center, 1.0 / n),
+            alignment: mult(alignment, 1.0 / n),
+            separation: mult(antigravity, 1.0 / n)
         };
     }
 
-    process_cohesion(neighbor_avg) {
-        let vec_c = {x: this.x - neighbor_avg.x, y: this.y - neighbor_avg.y};
-        let ang = Math.PI / 2 - Math.atan2(vec_c.y,vec_c.x);
-        if (ang < 0) ang += 2 * Math.PI;
 
-        let ret = 1;
-        if ((ang > this.alpha && ang-this.alpha < Math.PI)
-            || (this.alpha > ang && this.alpha - ang > Math.PI)) ret = -1;
-        return ret;
+    process_separation(neighbor_avg) {
+        let vec = neighbor_avg.separation;
+        return vec;
     }
 
     process_alignment(neighbor_avg) {
-        let ret = -1;
-        if ((neighbor_avg.alpha > this.alpha && neighbor_avg.alpha-this.alpha < Math.PI)
-            || (this.alpha > neighbor_avg.alpha && this.alpha - neighbor_avg.alpha > Math.PI)) ret = 1;
-        return ret;
+        let vec = neighbor_avg.alignment;
+        return vec;
     }
 
-    process_separation(neighbor_avg) {
-        return 0;
+    process_cohesion(neighbor_avg) {
+        let vec_c = {x: neighbor_avg.center.x - this.x, y: neighbor_avg.center.y - this.y};
+        let vec = mult(vec_c, 1.0 / this.flock.neighbor_radius);
+        return vec;
     }
 
     process_movement(ctx, params) {
         let neighbor_avg = this.neighbor_avg();
-        if (neighbor_avg.x !== undefined) {
-            let rot_coefficient = params.cohesion * this.process_cohesion(neighbor_avg) / 100;
-            rot_coefficient += params.alignment * this.process_alignment(neighbor_avg) / 100;
-            rot_coefficient += params.separation * this.process_separation(neighbor_avg) / 100;
-            this.rotate(rot_coefficient);
-        }
+        let param_sum = params.separation + params.alignment + params.cohesion;
+        if (neighbor_avg.center !== undefined && param_sum !== 0) {
+            // neighbors exist
+           let separation_vec = this.process_separation(neighbor_avg);
+           separation_vec = mult(separation_vec, params.separation);
+           let align_vec = this.process_alignment(neighbor_avg);
+           align_vec = mult(align_vec, params.alignment);
+           let cohesion_vec = this.process_cohesion(neighbor_avg);
+           cohesion_vec = mult(cohesion_vec, params.cohesion);
+
+           let vec = add(separation_vec, align_vec);
+           vec = add(vec, cohesion_vec);
+           this.angle_vec = vec;
+
+           let coeff = Math.sqrt(vec.x*vec.x + vec.y*vec.y);
+       } else {
+           this.angle_vec = {x: 0, y: 0};
+       }
+
         this.move(ctx);
 
     }
@@ -127,6 +149,13 @@ class Boid {
         if (this.show_radius) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.flock.neighbor_radius, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        if (this.angle_vec.x !== 0 || this.angle_vec.y !== 0) {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.angle_vec.x, this.y + this.angle_vec.y);
             ctx.stroke();
         }
     }

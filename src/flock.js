@@ -1,7 +1,7 @@
 import Boid from './boid.js';
 
 class Flock {
-    constructor(num) {
+    constructor(num, separation, alignment, cohesion) {
         const { innerWidth: width, innerHeight: height } = window;
         // Tweak this constant!
         this.neighbor_radius = 80;
@@ -15,9 +15,9 @@ class Flock {
         }
 
         this.params = {
-            separation: 50,
-            alignment: 50,
-            cohesion: 50,
+            separation: separation,
+            alignment: alignment,
+            cohesion: cohesion,
         }
     }
 
