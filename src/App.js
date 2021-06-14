@@ -42,13 +42,7 @@ class App extends React.Component {
 
     draw(ctx, frameCount) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = '#000000'
-        ctx.font = '20px serif';
-        /*
-        ctx.fillText("Separation: " + this.state.separation, 10, 20);
-        ctx.fillText("Alignment: " + this.state.alignment, 10, 40);
-        ctx.fillText("Cohesion: " + this.state.cohesion, 10, 60);
-        */
+        ctx.fillStyle = '#000000';
         this.flock.draw(ctx);
 
     }
@@ -89,47 +83,5 @@ class App extends React.Component {
         );
     }
 }
-/*
-function App() {
-    const draw = (ctx, frameCount) => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = '#000000'
-        ctx.font = '20px serif';
-        ctx.fillText("Separation: " + value1, 10, 20);
-        ctx.fillText("Alignment: " + value2, 10, 40);
-        ctx.fillText("Cohesion: " + value3, 10, 60);
-
-        flock.draw(ctx);
-
-    }
-
-
-
-    return (
-        <div className="App">
-            <h1 className="Title">boids</h1>
-            <div className="slider1">
-                <Slider
-                    value={value1}
-                    onChange={handleChange1}
-                    aria-labelledby="continuous-slider" />
-            </div>
-            <div className="slider2">
-                <Slider
-                    value={value2}
-                    onChange={handleChange2}
-                    aria-labelledby="continuous-slider" />
-            </div>
-            <div className="slider3">
-                <Slider
-                    value={value3}
-                    onChange={handleChange3}
-                    aria-labelledby="continuous-slider" />
-            </div>
-            <Canvas className="canvas" draw={draw}/>
-        </div>
-    );
-}
-*/
 
 export default App;
