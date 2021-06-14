@@ -4,9 +4,9 @@ import Slider from '@material-ui/core/Slider';
 import React from 'react';
 import Flock from './flock.js';
 
-const defaultSeparation = 100;
-const defaultAlignment = 0;
-const defaultCohesion = 0;
+const defaultSeparation = 50;
+const defaultAlignment = 50;
+const defaultCohesion = 50;
 
 
 class App extends React.Component {
@@ -44,10 +44,11 @@ class App extends React.Component {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         ctx.fillStyle = '#000000'
         ctx.font = '20px serif';
+        /*
         ctx.fillText("Separation: " + this.state.separation, 10, 20);
         ctx.fillText("Alignment: " + this.state.alignment, 10, 40);
         ctx.fillText("Cohesion: " + this.state.cohesion, 10, 60);
-
+        */
         this.flock.draw(ctx);
 
     }

@@ -20,7 +20,7 @@ class Boid {
         this.flock = flock;
 
         // Constants
-        this.speed = 0.2;
+        this.speed = 1;
         this.angspeed = 0.1;
 
         this.length = 10;
@@ -30,7 +30,8 @@ class Boid {
         this.neighbors = [];
 
         // Debugging
-        this.show_radius = true;
+        this.show_radius = false;
+        this.show_vec = false;
         this.angle_vec = {x: 0, y: 0};
     }
 
@@ -58,6 +59,12 @@ class Boid {
 
     rotate(rot_coefficient) {
         this.alpha += rot_coefficient * this.angspeed;
+        while (this.alpha > 2*Math.PI) {
+            this.alpha -= 2*Math.PI;
+        }
+        while (this.alpha < 0) {
+            this.alpha += 2*Math.PI;
+        }
     }
 
     neighbor_avg() {
@@ -98,6 +105,12 @@ class Boid {
 
     process_alignment(neighbor_avg) {
         let vec = neighbor_avg.alignment;
+        let ang = Math.PI / 2 - Math.atan2(vec.y,vec.x);
+        if (ang < 0) ang += 2 * Math.PI;
+        let diff = Math.abs(ang - this.alpha);
+        if (diff > Math.PI) diff = 2 * Math.PI - diff;
+        vec = mult(vec, diff / Math.PI);
+
         return vec;
     }
 
@@ -124,12 +137,30 @@ class Boid {
            this.angle_vec = vec;
 
            let coeff = Math.sqrt(vec.x*vec.x + vec.y*vec.y);
+           let ang = Math.PI / 2 - Math.atan2(vec.y,vec.x);
+           if (ang < 0) ang += 2 * Math.PI;
+
+           let ret = -1;
+           if ((ang > this.alpha && ang-this.alpha < Math.PI)
+               || (this.alpha > ang && this.alpha - ang > Math.PI)) ret = 1;
+           this.rotate(coeff * ret / 100.0);
        } else {
            this.angle_vec = {x: 0, y: 0};
        }
 
         this.move(ctx);
 
+    }
+
+    process_cohesion_1(neighbor_avg) {
+        let vec_c = {x: this.x - neighbor_avg.x, y: this.y - neighbor_avg.y};
+        let ang = Math.PI / 2 - Math.atan2(vec_c.y,vec_c.x);
+        if (ang < 0) ang += 2 * Math.PI;
+
+        let ret = 1;
+        if ((ang > this.alpha && ang-this.alpha < Math.PI)
+            || (this.alpha > ang && this.alpha - ang > Math.PI)) ret = -1;
+        return ret;
     }
 
     draw(ctx) {
@@ -152,7 +183,7 @@ class Boid {
             ctx.stroke();
         }
 
-        if (this.angle_vec.x !== 0 || this.angle_vec.y !== 0) {
+        if (this.show_vec && (this.angle_vec.x !== 0 || this.angle_vec.y !== 0)) {
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
             ctx.lineTo(this.x + this.angle_vec.x, this.y + this.angle_vec.y);
