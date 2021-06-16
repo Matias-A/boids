@@ -1,7 +1,7 @@
 import Boid from './boid.js';
 
 class Flock {
-    constructor(num, separation, alignment, cohesion) {
+    constructor(num, separation, alignment, cohesion, vision) {
         const { innerWidth: width, innerHeight: height } = window;
         // Tweak this constant!
         this.neighbor_radius = 80;
@@ -18,7 +18,10 @@ class Flock {
             separation: separation,
             alignment: alignment,
             cohesion: cohesion,
+            vision: vision,
         }
+
+        this.show_radius = false;
     }
 
     setSeparation(val) {
@@ -31,6 +34,12 @@ class Flock {
 
     setCohesion(val) {
         this.params.cohesion = val;
+    }
+
+    setVision(val) {
+        this.params.vision = val;
+        this.show_radius = true;
+        setTimeout(()=>{this.show_radius = false}, 1000);
     }
 
     draw(ctx) {

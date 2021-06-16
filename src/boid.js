@@ -67,7 +67,7 @@ class Boid {
         }
     }
 
-    neighbor_avg() {
+    neighbor_avg(params) {
         const gravity_constant = 20.0;
         let n = 0;
 
@@ -76,7 +76,7 @@ class Boid {
         let antigravity = {x: 0, y: 0}; // "anti-gravity" effect away from close neighbors (i.e. separation)
 
         for (let boid of this.flock.boids) {
-            if (boid === this || this.dist(boid) > this.flock.neighbor_radius) continue;
+            if (boid === this || this.dist(boid) > 2*params.vision) continue;
             // Only for neighbors:
             center = add(center, boid);
             alignment = add(alignment, {x: Math.sin(boid.alpha), y: Math.cos(boid.alpha)});
@@ -98,12 +98,12 @@ class Boid {
     }
 
 
-    process_separation(neighbor_avg) {
+    process_separation(neighbor_avg, params) {
         let vec = neighbor_avg.separation;
         return vec;
     }
 
-    process_alignment(neighbor_avg) {
+    process_alignment(neighbor_avg, params) {
         let vec = neighbor_avg.alignment;
         let ang = Math.PI / 2 - Math.atan2(vec.y,vec.x);
         if (ang < 0) ang += 2 * Math.PI;
@@ -114,22 +114,22 @@ class Boid {
         return vec;
     }
 
-    process_cohesion(neighbor_avg) {
+    process_cohesion(neighbor_avg, params) {
         let vec_c = {x: neighbor_avg.center.x - this.x, y: neighbor_avg.center.y - this.y};
-        let vec = mult(vec_c, 1.0 / this.flock.neighbor_radius);
+        let vec = mult(vec_c, 0.5 / params.vision);
         return vec;
     }
 
     process_movement(ctx, params) {
-        let neighbor_avg = this.neighbor_avg();
+        let neighbor_avg = this.neighbor_avg(params);
         let param_sum = params.separation + params.alignment + params.cohesion;
         if (neighbor_avg.center !== undefined && param_sum !== 0) {
             // neighbors exist
-           let separation_vec = this.process_separation(neighbor_avg);
+           let separation_vec = this.process_separation(neighbor_avg, params);
            separation_vec = mult(separation_vec, params.separation);
-           let align_vec = this.process_alignment(neighbor_avg);
+           let align_vec = this.process_alignment(neighbor_avg, params);
            align_vec = mult(align_vec, params.alignment);
-           let cohesion_vec = this.process_cohesion(neighbor_avg);
+           let cohesion_vec = this.process_cohesion(neighbor_avg, params);
            cohesion_vec = mult(cohesion_vec, params.cohesion);
 
            let vec = add(separation_vec, align_vec);
@@ -163,7 +163,7 @@ class Boid {
         return ret;
     }
 
-    draw(ctx) {
+    draw(ctx, params) {
         ctx.beginPath();
 
         let r = this.length / 2 + this.width * this.width / (8 * this.length);
@@ -172,17 +172,19 @@ class Boid {
         ctx.moveTo(this.x + r * Math.sin(this.alpha), this.y + r * Math.cos(this.alpha)); // Top
         ctx.lineTo(this.x + r * Math.sin(this.alpha + a + Math.PI), this.y + r * Math.cos(this.alpha + a + Math.PI)); // Left
         ctx.lineTo(this.x + r * Math.sin(this.alpha - a + Math.PI), this.y + r * Math.cos(this.alpha - a + Math.PI)); // Right
-        //
-        //ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
-        //ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
+
         ctx.fill();
 
-        if (this.show_radius) {
+        // Draws the radius circle
+        // Used for debugging and also displayed when vision is changed
+        if (this.show_radius || this.flock.show_radius) {
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.flock.neighbor_radius, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, this.flock.params.vision, 0, 2 * Math.PI);
             ctx.stroke();
         }
 
+        // Shows the direction in which the boid is turning
+        // (for debugging)
         if (this.show_vec && (this.angle_vec.x !== 0 || this.angle_vec.y !== 0)) {
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);

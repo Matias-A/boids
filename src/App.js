@@ -7,6 +7,7 @@ import Flock from './flock.js';
 const defaultSeparation = 50;
 const defaultAlignment = 50;
 const defaultCohesion = 50;
+const defaultVision = 50;
 
 
 class App extends React.Component {
@@ -16,28 +17,35 @@ class App extends React.Component {
             separation: defaultSeparation,
             alignment: defaultAlignment,
             cohesion: defaultCohesion,
+            vision: defaultVision,
         }
-        this.flock = new Flock(20, defaultSeparation, defaultAlignment, defaultCohesion);
+        this.flock = new Flock(20, defaultSeparation, defaultAlignment, defaultCohesion, defaultVision);
 
-        this.handleChange1.bind(this);
-        this.handleChange2.bind(this);
-        this.handleChange3.bind(this);
+        this.handleSeparation.bind(this);
+        this.handleAlignment.bind(this);
+        this.handleCohesion.bind(this);
+        this.handleVision.bind(this);
         this.draw.bind(this);
     }
 
-    handleChange1(event, newValue) {
+    handleSeparation(event, newValue) {
         this.flock.setSeparation(newValue);
         this.setState({separation: newValue});
     };
 
-    handleChange2(event, newValue) {
+    handleAlignment(event, newValue) {
         this.flock.setAlignment(newValue);
         this.setState({alignment: newValue});
     };
 
-    handleChange3(event, newValue) {
+    handleCohesion(event, newValue) {
         this.flock.setCohesion(newValue);
         this.setState({cohesion: newValue});
+    };
+
+    handleVision(event, newValue) {
+        this.flock.setVision(newValue);
+        this.setState({vision: newValue});
     };
 
     draw(ctx, frameCount) {
@@ -56,7 +64,7 @@ class App extends React.Component {
                     <span className="slider">
                         <Slider
                             value={this.state.separation}
-                            onChange={(e, v) => this.handleChange1(e,v)}
+                            onChange={(e, v) => this.handleSeparation(e,v)}
                             aria-labelledby="continuous-slider" />
                     </span>
                 </div>
@@ -65,7 +73,7 @@ class App extends React.Component {
                     <span className="slider">
                         <Slider
                             value={this.state.alignment}
-                            onChange={(e, v) => this.handleChange2(e,v)}
+                            onChange={(e, v) => this.handleAlignment(e,v)}
                             aria-labelledby="continuous-slider" />
                     </span>
                 </div>
@@ -74,7 +82,16 @@ class App extends React.Component {
                     <span className="slider">
                         <Slider
                             value={this.state.cohesion}
-                            onChange={(e, v) => this.handleChange3(e,v)}
+                            onChange={(e, v) => this.handleCohesion(e,v)}
+                            aria-labelledby="continuous-slider" />
+                        </span>
+                </div>
+                <div className="slider4">
+                    <span className="slider-label">Vision</span>
+                    <span className="slider">
+                        <Slider
+                            value={this.state.vision}
+                            onChange={(e, v) => this.handleVision(e,v)}
                             aria-labelledby="continuous-slider" />
                         </span>
                 </div>
