@@ -62,3 +62,9 @@
     left: 20px;
     width: 200px;
 }
+
+.restart-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}

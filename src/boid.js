@@ -179,7 +179,7 @@ class Boid {
         // Used for debugging and also displayed when vision is changed
         if (this.show_radius || this.flock.show_radius) {
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.flock.params.vision, 0, 2 * Math.PI);
+            ctx.arc(this.x, this.y, 2*this.flock.params.vision, 0, 2 * Math.PI);
             ctx.stroke();
         }
 
