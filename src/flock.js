@@ -3,8 +3,6 @@ import Boid from './boid.js';
 class Flock {
     constructor(num, separation, alignment, cohesion, vision) {
         const { innerWidth: width, innerHeight: height } = window;
-        // Tweak this constant!
-        this.neighbor_radius = 80;
 
         this.boids = [];
         for (var i = 0; i < num; i++) {
@@ -34,6 +32,10 @@ class Flock {
 
     setCohesion(val) {
         this.params.cohesion = val;
+    }
+
+    addBoid(x, y, angle) {
+        this.boids.push(new Boid(x, y, angle, this));
     }
 
     setVision(val) {

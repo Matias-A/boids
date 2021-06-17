@@ -86,6 +86,19 @@ class App extends React.Component {
 
     dragEnd(e) {
         this.setState({dragging: false});
+        if (this.state.dragStart.x === this.state.dragCurr.x &&
+            this.state.dragStart.y === this.state.dragCurr.y) return;
+
+        let x = this.state.dragStart.x;
+        let y = this.state.dragStart.y;
+
+        let vec_x = this.state.dragCurr.x - this.state.dragStart.x;
+        let vec_y = this.state.dragCurr.y - this.state.dragStart.y;
+
+        let ang = Math.PI / 2 - Math.atan2(vec_y,vec_x);
+
+
+        this.flock.addBoid(x, y, ang);
     }
 
     handleRestart(e) {

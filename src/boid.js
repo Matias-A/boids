@@ -93,7 +93,7 @@ class Boid {
         return {
             center: mult(center, 1.0 / n),
             alignment: mult(alignment, 1.0 / n),
-            separation: mult(antigravity, 1.0 / n)
+            separation: mult(antigravity, 0.3)
         };
     }
 
@@ -150,17 +150,6 @@ class Boid {
 
         this.move(ctx);
 
-    }
-
-    process_cohesion_1(neighbor_avg) {
-        let vec_c = {x: this.x - neighbor_avg.x, y: this.y - neighbor_avg.y};
-        let ang = Math.PI / 2 - Math.atan2(vec_c.y,vec_c.x);
-        if (ang < 0) ang += 2 * Math.PI;
-
-        let ret = 1;
-        if ((ang > this.alpha && ang-this.alpha < Math.PI)
-            || (this.alpha > ang && this.alpha - ang > Math.PI)) ret = -1;
-        return ret;
     }
 
     draw(ctx, params) {
