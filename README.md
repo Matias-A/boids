@@ -1,5 +1,5 @@
 # Boids Life Simulator
-<img width="752" alt="Screen Shot 2021-09-02 at 11 25 05 PM" src="https://user-images.githubusercontent.com/8319613/131911360-456afabe-05a9-4f06-a815-1dda07d8c5dd.png">
+<img width="890" alt="Screen Shot 2021-09-02 at 11 26 54 PM" src="https://user-images.githubusercontent.com/8319613/131911525-ed9b535e-046b-4f9d-bfde-7fa1ca9f40d6.png">
 
 I ran across a life simulation algorithm called [Boids](https://en.wikipedia.org/wiki/Boids), and wanted to implement it using React.
 
